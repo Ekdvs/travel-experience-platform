@@ -161,7 +161,7 @@ export const getListingById = async(request,response)=>{
 }
 
 //update listing by Owner
-export const updateListing = async(request,response)=>{
+export const updateListingById = async(request,response)=>{
     try {
         const listingId = request.params.id;
         const userId = request.userId;
@@ -200,7 +200,10 @@ export const updateListing = async(request,response)=>{
             );
         }
 
-        if(listing.creator.toString() !== userId){
+        //console.log("listing.creator", listing.creator.toString())
+        //console.log("userId", userId.toString())   
+
+        if(listing.creator.toString() !== userId.toString()){
             return response.status(403).json(
                 { 
                     message: "Forbidden, you are not the owner of this listing", 
@@ -239,3 +242,112 @@ export const updateListing = async(request,response)=>{
         
     }
 }
+
+//delete listing by Owner
+export const deleteListingById =async(request,response)=>{
+    try {
+        const listingId = request.params.id;
+        const userId = request.userId;
+        
+
+        if(!listingId){
+            return response.status(400).json(
+                { 
+                    message: "Listing id is required", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+
+        if(!userId) {
+            return response.status(401).json(
+                { 
+                    message: "Unauthorized, user not found", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+
+        //find listing
+        const listing = await Listing.findById(listingId);
+
+        if(!listing){
+            return response.status(404).json(
+                { 
+                    message: "Listing not found", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+  
+
+        if(listing.creator.toString() !== userId.toString()){
+            return response.status(403).json(
+                { 
+                    message: "Forbidden, you are not the owner of this listing", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+
+        await listing.deleteOne();
+
+
+        response.status(200).json(
+            { 
+                message: "Listing deleted successfully", 
+                error: false,
+                success: true,
+                
+            }
+        );
+        
+    } catch (error) {
+        console.log(error.message)
+        response.status(500).json(
+            { 
+                message: "Error deleting listing", 
+                error: true,
+                success: false 
+            }
+        );
+        
+    }
+}
+
+//get listings by user id
+export const getListingsByUserId = async (request, response) => {
+    try {
+        const userId = request.userId;
+
+        if (!userId) {
+        return response.status(401).json({
+            message: "Unauthorized, user not found",
+            error: true,
+            success: false
+        });
+        }
+
+        // Fetch listings for this user
+        const listing = await Listing.find({ creator: userId }).populate("creator", "name");
+
+        response.status(200).json({
+            message: "Listings fetched successfully",
+            error: false,
+            success: true,
+            data: listing
+        });
+
+    } catch (error) {
+        console.error("Error fetching user listings:", error.message);
+        response.status(500).json({
+            message: "Error fetching listings",
+            error: true,
+            success: false
+        });
+    }
+};
