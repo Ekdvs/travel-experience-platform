@@ -12,7 +12,7 @@ dotenv.config();
 app.use(
     cors(
         {
-            origin:["http://localhost:3000","https://travel-experience-platform.onrender.com"],
+            origin:["http://localhost:3000","https://travel-experience-platform.vercel.app/"],
             methods: ["GET", "POST", "PUT", "DELETE"],
             credentials: true,
             allowedHeaders: ["Content-Type", "Authorization"],
