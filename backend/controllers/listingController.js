@@ -161,87 +161,78 @@ export const getListingById = async(request,response)=>{
 }
 
 //update listing by Owner
-export const updateListingById = async(request,response)=>{
-    try {
-        const listingId = request.params.id;
-        const userId = request.userId;
-        const { title, location, description, price } = request.body;
+export const updateListingById = async (request, response) => {
+  try {
+    const listingId = request.params.id;
+    const userId = request.userId;
+    const { title, location, description, price } = request.body;
 
-        if(!listingId){
-            return response.status(400).json(
-                { 
-                    message: "Listing id is required", 
-                    error: true,
-                    success: false 
-                }
-            );
-        }
-
-        if(!userId) {
-            return response.status(401).json(
-                { 
-                    message: "Unauthorized, user not found", 
-                    error: true,
-                    success: false 
-                }
-            );
-        }
-
-        //find listing
-        const listing = await Listing.findById(listingId);
-
-        if(!listing){
-            return response.status(404).json(
-                { 
-                    message: "Listing not found", 
-                    error: true,
-                    success: false 
-                }
-            );
-        }
-
-        //console.log("listing.creator", listing.creator.toString())
-        //console.log("userId", userId.toString())   
-
-        if(listing.creator.toString() !== userId.toString()){
-            return response.status(403).json(
-                { 
-                    message: "Forbidden, you are not the owner of this listing", 
-                    error: true,
-                    success: false 
-                }
-            );
-        }
-
-
-        //update listing
-        listing.title = title || listing.title;
-        listing.location = location || listing.location;
-        listing.description = description || listing.description;
-        listing.price = price || listing.price;
-        await listing.save();
-
-        response.status(200).json(
-            { 
-                message: "Listing updated successfully", 
-                error: false,
-                success: true,
-                data: listing
-            }
-        );
-        
-    } catch (error) {
-        console.log(error.message)
-        response.status(500).json(
-            { 
-                message: "Error updating listing", 
-                error: true,
-                success: false 
-            }
-        );
-        
+    if (!listingId) {
+      return response.status(400).json({
+        message: "Listing id is required",
+        error: true,
+        success: false
+      });
     }
-}
+
+    if (!userId) {
+      return response.status(401).json({
+        message: "Unauthorized, user not found",
+        error: true,
+        success: false
+      });
+    }
+
+    // Find listing
+    const listing = await Listing.findById(listingId);
+
+    if (!listing) {
+      return response.status(404).json({
+        message: "Listing not found",
+        error: true,
+        success: false
+      });
+    }
+
+    // Verify ownership
+    if (listing.creator.toString() !== userId.toString()) {
+      return response.status(403).json({
+        message: "Forbidden, you are not the owner of this listing",
+        error: true,
+        success: false
+      });
+    }
+
+    // Update text fields
+    listing.title = title || listing.title;
+    listing.location = location || listing.location;
+    listing.description = description || listing.description;
+    listing.price = price || listing.price;
+
+    // Update images if new files are uploaded
+    if (request.files && request.files.length > 0) {
+      const imageUrls = request.files.map(file => file.path); // Cloudinary URLs
+      listing.image = imageUrls;
+    }
+
+    await listing.save();
+
+    return response.status(200).json({
+      message: "Listing updated successfully",
+      error: false,
+      success: true,
+      data: listing
+    });
+
+  } catch (error) {
+    console.error(error.message);
+    return response.status(500).json({
+      message: "Error updating listing",
+      error: true,
+      success: false
+    });
+  }
+};
 
 //delete listing by Owner
 export const deleteListingById =async(request,response)=>{
@@ -343,7 +334,7 @@ export const getListingsByUserId = async (request, response) => {
         });
 
     } catch (error) {
-        console.error("Error fetching user listings:", error.message);
+        console.error(error.message);
         response.status(500).json({
             message: "Error fetching listings",
             error: true,
@@ -351,3 +342,122 @@ export const getListingsByUserId = async (request, response) => {
         });
     }
 };
+
+//add like to listing
+export const likeListing = async (request, response) => {
+    try {
+        const listingId = request.params.id;
+        const userId = request.userId;
+
+        if (!listingId) {
+        return response.status(400).json({
+            message: "Listing id is required",
+            error: true,
+            success: false
+        });
+        }
+
+        if (!userId) {
+        return response.status(401).json({
+            message: "Unauthorized, user not found",
+            error: true,
+            success: false
+        });
+        }
+
+        //find listing
+        const listing = await Listing.findById(listingId);
+
+        if (!listing) {
+        return response.status(404).json({
+            message: "Listing not found",
+            error: true,
+            success: false
+        });
+        }
+
+        //check if user already liked the listing
+        if (listing.likes.includes(userId)) {
+        return response.status(400).json({
+            message: "You have already liked this listing",
+            error: true,
+            success: false
+        });
+        }
+        
+        //add like to listing
+        listing.likes.push(userId);
+        await listing.save();
+
+        return response.status(200).json({
+        message: "Listing liked successfully",
+        error: false,
+        success: true,
+        data: listing
+        });
+        
+    } catch (error) {
+        console.error(error.message);
+        return response.status(500).json({
+            message: "Error liking listing",
+            error: true,
+            success: false
+        });
+    }
+}
+
+//add save to listing
+export const saveListing = async (request, response) => {
+    try {
+        const listingId = request.params.id;
+        const userId = request.userId;
+        if (!listingId) {
+            return response.status(400).json({
+                message: "Listing id is required",
+                error: true,
+                success: false
+            });
+        }
+        if (!userId) {
+            return response.status(401).json({
+                message: "Unauthorized, user not found",
+                error: true,
+                success: false
+            });
+        }
+        //find listing
+        const listing = await Listing.findById(listingId);
+        if (!listing) {
+            return response.status(404).json({
+                message: "Listing not found",
+                error: true,
+                success: false
+            });
+        }
+        //check if user already saved the listing
+        if (listing.savedBy.includes(userId)) {
+            return response.status(400).json({
+                message: "You have already saved this listing",
+                error: true,
+                success: false
+            });
+
+        }
+        //add save to listing
+        listing.savedBy.push(userId);
+        await listing.save();
+        return response.status(200).json({
+            message: "Listing saved successfully",
+            error: false,
+            success: true,
+            data: listing
+            });
+    } catch (error) {
+        console.error(error.message);
+        return response.status(500).json({
+            message: "Error saving listing",
+            error: true,
+            success: false
+        });
+    }
+}
