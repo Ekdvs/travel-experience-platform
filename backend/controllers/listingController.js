@@ -71,7 +71,7 @@ export const createListing = async (request,response)=>{
 export const getAllListings = async (request,response)=>{
     try {
         const page= parseInt(request.query.page) || 1;
-        const limit = parseInt(request.query.limit) || 10;
+        const limit = parseInt(request.query.limit) || 12;
         const skip = (page - 1) * limit;
 
         //get total count of listings
