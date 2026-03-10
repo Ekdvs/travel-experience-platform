@@ -1,6 +1,6 @@
+import { request } from "express";
 import upload from "../middleware/upload.js";
 import Listing from "../model/Listing.js";
-
 
 //create listing
 export const createListing = async (request,response)=>{
@@ -56,7 +56,7 @@ export const createListing = async (request,response)=>{
 
 
     } catch (error) {
-        console.log(error)
+        console.log(error.message)
         response.status(500).json(
             { 
                 message: "Error creating listing", 
@@ -64,5 +64,178 @@ export const createListing = async (request,response)=>{
                 success: false 
             }
         );
+    }
+}
+
+//get all listings
+export const getAllListings = async (request,response)=>{
+    try {
+        const page= parseInt(request.query.page) || 1;
+        const limit = parseInt(request.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        //get total count of listings
+        const total = await Listing.countDocuments();
+
+        //total pages
+        const totalPages = Math.ceil(total / limit);
+
+        //fetch listing all
+        const listings = await Listing.find().sort({ createdAt: -1 }).skip(skip).limit(limit).populate("creator","name ");
+        
+        response.status(200).json(
+            { 
+                message: "Listings fetched successfully", 
+                error: false,
+                success: true,
+                data: { 
+                    listings, 
+                    pagination: {
+                        total,
+                        page,
+                        limit,
+                        totalPages,
+                        hasNextPage: page < totalPages,
+                        hasPrevPage: page > 1
+                    } 
+                }
+            }
+        );
+    } catch (error) {
+        console.log("error", error.message);
+        response.status(500).json(
+            { 
+                message: "Error fetching listings", 
+                error: true,
+                success: false 
+            }
+        );
+    }
+}
+
+//get listing by id
+export const getListingById = async(request,response)=>{
+    try {
+        const listingId = request.params.id;
+
+        if(!listingId){
+            return response.status(400).json(
+                { 
+                    message: "Listing id is required", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+
+        const listing = await Listing.findById(listingId).populate("creator","name"); 
+        if(!listing){
+            return response.status(404).json(
+                { 
+                    message: "Listing not found", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+        response.status(200).json(
+            { 
+                message: "Listing fetched successfully", 
+                error: false,
+                success: true,
+                data: listing
+            }
+        );  
+        
+    } catch (error) {
+        console.log(error.message)
+        response.status(500).json(
+            { 
+                message: "Error fetching listing", 
+                error: true,
+                success: false 
+            }
+        );
+        
+    }
+}
+
+//update listing by Owner
+export const updateListing = async(request,response)=>{
+    try {
+        const listingId = request.params.id;
+        const userId = request.userId;
+        const { title, location, description, price } = request.body;
+
+        if(!listingId){
+            return response.status(400).json(
+                { 
+                    message: "Listing id is required", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+
+        if(!userId) {
+            return response.status(401).json(
+                { 
+                    message: "Unauthorized, user not found", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+
+        //find listing
+        const listing = await Listing.findById(listingId);
+
+        if(!listing){
+            return response.status(404).json(
+                { 
+                    message: "Listing not found", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+
+        if(listing.creator.toString() !== userId){
+            return response.status(403).json(
+                { 
+                    message: "Forbidden, you are not the owner of this listing", 
+                    error: true,
+                    success: false 
+                }
+            );
+        }
+
+
+        //update listing
+        listing.title = title || listing.title;
+        listing.location = location || listing.location;
+        listing.description = description || listing.description;
+        listing.price = price || listing.price;
+        await listing.save();
+
+        response.status(200).json(
+            { 
+                message: "Listing updated successfully", 
+                error: false,
+                success: true,
+                data: listing
+            }
+        );
+        
+    } catch (error) {
+        console.log(error.message)
+        response.status(500).json(
+            { 
+                message: "Error updating listing", 
+                error: true,
+                success: false 
+            }
+        );
+        
     }
 }
