@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080/api", 
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL || 'https://travel-experience-platform.onrender.com',
 });
 
 API.interceptors.request.use((config) => {
