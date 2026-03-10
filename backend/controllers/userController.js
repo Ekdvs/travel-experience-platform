@@ -124,3 +124,107 @@ export const loginUser = async(request,response)=>{
 }
 
 //get user profile
+export const getUserData = async(request,response)=>{
+    try { 
+        //console.log("request.user",request.user)
+        const user = request.user;
+        return response.status(200).json({
+            message:'User data fetched successfully',
+            error:false,
+            success:true,
+            data:user
+        })
+        
+    } catch (error) {
+        console.log(error.message)
+        return response.status(500).json({
+            message:'Internal sever error',
+            error:true,
+            success:false
+            
+        })
+    }
+}
+
+//logout user
+export const logOutUser = async(request,response)=>{
+    try {
+        const userId = request.userId;
+
+        if(!userId){
+            return response.status(400).json({
+                message:'User id is required',
+                error:true,
+                success:false
+            })
+        }
+
+        //remove refresh token from database
+        await User.updateOne(
+            { _id: userId },
+            { $unset: { refreshToken: 1 } }
+        );
+
+        return response.status(200).json({
+            message:'User logged out successfully',
+            error:false,
+            success:true
+        });
+
+    } catch (error) {
+        console.log(error.message)
+        return response.status(500).json({
+            message:'Internal sever error',
+            error:true,
+            success:false
+        })
+    }
+}
+
+//refresh access token
+export const refreshAccessToken = async(request,response)=>{
+    try {
+        const {refreshToken} = request.body;
+
+        if(!refreshToken){
+            return response.status(400).json({
+                message:'Refresh token is required',
+                error:true,
+                success:false
+            })
+        }
+
+        //verify refresh token
+        const decoded = jwt.verify(refreshToken,process.env.SECRET_KEY_REFRESH_TOKEN);
+
+        //find user from decoded token
+        const user = await User.findById(decoded.id);
+
+        if(!user || user.refreshToken !== refreshToken){
+            return response.status(401).json({
+                message:'Unauthorized, invalid refresh token',
+                error:true,
+                success:false
+            })
+        }
+
+        //create new access token
+        const accessToken = await generatedAccesToken(user);
+        return response.status(200).json({
+            message:'Access token refreshed successfully',
+            error:false,
+            success:true,
+            data:{
+                accessToken:accessToken
+            }
+        })  
+        
+    } catch (error) {
+        console.log(error.message)
+        return response.status(500).json({
+            message:'Internal sever error',
+            error:true,
+            success:false
+        })
+    }
+}
