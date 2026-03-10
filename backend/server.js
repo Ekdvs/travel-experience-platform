@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRouter from "./routes/userRouter.js";
 import cors from "cors";
+import listingRouter from "./routes/listingRouter.js";
 
 const app =express()
 
@@ -30,6 +31,7 @@ app.get("/",(req,res)=>{
 
 //routers
 app.use("/api/users",userRouter)
+app.use("/api/listings",listingRouter)
 
 //get port
 const PORT = process.env.PORT || 8080;

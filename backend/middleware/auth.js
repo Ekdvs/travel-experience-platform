@@ -22,7 +22,7 @@ const auth =async (request,response,next)=>{
 
         //verify token
         const decoded = jwt.verify(token,process.env.SECRET_KEY_ACCESS_TOKEN);
-        console.log("decoded",decoded)
+        //console.log("decoded",decoded)
 
         //find user from decoded token
         const user = await User.findById(decoded.id).select("-password");
