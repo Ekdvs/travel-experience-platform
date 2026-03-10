@@ -1,5 +1,7 @@
 import User from "../model/User.js";
 import bcrypt from 'bcrypt';
+import generatedAccesToken from "../utill/genaratedAccesToken.js";
+import generateRefreshToken from "../utill/genaratedRefreshToken.js";
 
 //register User
 export const registerUser = async (request,response)=>{
@@ -56,4 +58,69 @@ export const registerUser = async (request,response)=>{
             success:false
     })
     }
+
+
 }
+
+//login user
+export const loginUser = async(request,response)=>{
+    try {
+        const {email,password} = request.body;
+        if(!email || !password){
+            return response.status(400).json({
+                message:'Please provide all required fields',
+                error:true,
+                success:false
+            })
+        }
+        
+        const user = await User.findOne({email:email.toLowerCase()});
+        if(!user){
+            return response.status(400).json({
+                message:'Invalid email or password',
+                error:true,
+                success:false
+            })
+        }
+        
+        const checkpassword = await bcrypt.compare(password,user.password);
+        if(!checkpassword){
+            return response.status(400).json({
+                message:'Invalid email or password',
+                error:true,
+                success:false
+            })
+        }
+
+        //update last login date
+        user.lastLoginDate = new Date();
+        await user.save();
+
+        //create access token and refresh token
+        const accessToken = await generatedAccesToken(user);
+        const refreshToken = await generateRefreshToken(user);
+
+        return response.status(200).json({
+            message:'User logged in successfully',
+            error:false,
+            success:true,
+            data:{
+                accessToken,
+                refreshToken,
+                userInfo:user
+            }
+        })
+
+
+    } catch (error) {
+        console.log(error.message)
+        return response.status(500).json({
+            message:'Internal sever error',
+            error:true,
+            success:false
+            
+        })
+    }
+}
+
+//get user profile
