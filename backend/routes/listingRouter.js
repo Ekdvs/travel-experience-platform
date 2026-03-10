@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { createListing, deleteListingById, getAllListings, getListingById, getListingsByUserId, likeListing, saveListing, updateListingById} from '../controllers/listingController.js';
+import { createListing, deleteListingById, getAllListings, getListingById, getListingsByUserId, likeListing, saveListing, searchListings, updateListingById} from '../controllers/listingController.js';
 import upload from '../middleware/upload.js';
 
 
@@ -14,6 +14,7 @@ listingRouter.delete('/deleteListingById/:id',auth,deleteListingById)
 listingRouter.get('/getListingByUserId',auth,getListingsByUserId)
 listingRouter.post('/like/:id',auth,likeListing)
 listingRouter.post('/save/:id',auth,saveListing)
+listingRouter.get('/search',searchListings)
 
 
 export default listingRouter

@@ -461,3 +461,65 @@ export const saveListing = async (request, response) => {
         });
     }
 }
+
+//add search by title and location and description
+export const searchListings = async (request, response) => {
+  try {
+
+    const { query, page = 1, limit = 9 } = request.query;
+
+    if (!query) {
+      return response.status(400).json({
+        message: "Search query is required",
+        error: true,
+        success: false
+      });
+    }
+
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // search filter
+    const searchFilter = {
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { location: { $regex: query, $options: "i" } },
+        { description: { $regex: query, $options: "i" } }
+      ]
+    };
+
+    // get total count
+    const totalListings = await Listing.countDocuments(searchFilter);
+
+    // fetch paginated results
+    const listings = await Listing.find(searchFilter)
+      .populate("creator", "name")
+      .skip(skip)
+      .limit(limitNumber)
+      .sort({ createdAt: -1 });
+
+    return response.status(200).json({
+      message: "Listings fetched successfully",
+      error: false,
+      success: true,
+      data: listings,
+      pagination: {
+        total: totalListings,
+        page: pageNumber,
+        limit: limitNumber,
+        totalPages: Math.ceil(totalListings / limitNumber)
+      }
+    });
+
+  } catch (error) {
+    console.error(error.message);
+
+    return response.status(500).json({
+      message: "Error searching listings",
+      error: true,
+      success: false
+    });
+  }
+};
