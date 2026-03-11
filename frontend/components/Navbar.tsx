@@ -3,7 +3,7 @@
 import { useState, useContext } from "react";
 import Link from "next/link";
 import { AuthContext } from "@/context/AuthContext";
-import { Menu, X, LogIn, UserPlus, LogOut, PlusCircle, Plane } from "lucide-react";
+import { Menu, X, LogIn, UserPlus, LogOut, PlusCircle, Plane, LayoutDashboard } from "lucide-react";
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -121,6 +121,14 @@ const Navbar = () => {
               >
                 <UserPlus size={18} />
                 Register
+              </Link>
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2 hover:text-blue-200"
+              >
+                <LayoutDashboard size={18} />
+                Dashboard
               </Link>
             </>
           )}
