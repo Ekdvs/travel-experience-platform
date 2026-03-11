@@ -77,7 +77,7 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[url('/bglogin.jpg')] bg-cover bg-center flex items-center justify-center">
+    <div className="w-full h-screen bg-[url('/bglogin.jpg')] bg-cover bg-center flex items-center justify-center">
 
       {/* LEFT SIDE */}
       <div className="hidden lg:flex w-1/2 h-full flex-col items-center justify-center gap-8 bg-black/50 p-10">
