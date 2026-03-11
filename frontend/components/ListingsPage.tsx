@@ -13,6 +13,7 @@ import {
   FileText,
   Tag
 } from "lucide-react";
+import Loader from "./Loader";
 
 interface Listing {
   _id: string;
@@ -206,13 +207,7 @@ const ListingsPage: React.FC<Props> = ({ token }) => {
 
   const totalImages = keptImages.length + newImages.length;
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <Loader />;
 
   return (
     <>

@@ -5,8 +5,9 @@ import { useParams } from "next/navigation";
 import API from "@/utils/api";
 import ImageSlider from "@/components/ImageSlider";
 import moment from "moment";
-import { Heart, Bookmark } from "lucide-react";
+import { Heart, Bookmark,} from "lucide-react";
 import toast from "react-hot-toast";
+import Loader from "@/components/Loader";
 
 const ListingDetails = () => {
 
@@ -66,7 +67,7 @@ const ListingDetails = () => {
     }
   };
 
-  if (loading) return <p className="p-6">Loading...</p>;
+if (loading) return <Loader />;
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -85,6 +86,17 @@ const ListingDetails = () => {
       <p className="text-sm text-gray-400 mt-1">
         Posted by {listing.creator?.name} • {moment(listing.createdAt).fromNow()}
       </p>
+      <div className="mt-6">
+
+        <h2 className="text-xl font-semibold mb-2">
+          Description
+        </h2>
+
+        <p className="text-gray-700 leading-relaxed">
+          {listing.description}
+        </p>
+
+      </div>
 
       <div className="flex gap-4 mt-4">
 
@@ -106,17 +118,7 @@ const ListingDetails = () => {
 
       </div>
 
-      <div className="mt-6">
-
-        <h2 className="text-xl font-semibold mb-2">
-          Description
-        </h2>
-
-        <p className="text-gray-700 leading-relaxed">
-          {listing.description}
-        </p>
-
-      </div>
+      
 
     </div>
   );

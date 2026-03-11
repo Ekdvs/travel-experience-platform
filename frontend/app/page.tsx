@@ -60,9 +60,7 @@ const HomePage = () => {
   }, [page, search]);
 
 
-  if(loading) {
-    <Loader />
-  }
+  if (loading) return <Loader />;
 
 
 
