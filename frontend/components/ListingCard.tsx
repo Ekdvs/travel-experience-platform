@@ -6,12 +6,25 @@ import moment from "moment";
 const ListingCard = ({ listing }: any) => {
   return (
     <div className="border rounded-lg shadow hover:shadow-lg transition overflow-hidden">
-      
-      <img
-        src={listing.image?.[0] || "/placeholder.jpg"}
-        alt={listing.title}
-        className="h-48 w-full object-cover"
-      />
+      {/* Image Slider */}
+      <div className="flex overflow-x-auto scrollbar-hide">
+        {listing.image?.length > 0 ? (
+          listing.image.map((img: string, index: number) => (
+            <img
+              key={index}
+              src={img}
+              alt={`${listing.title} image ${index + 1}`}
+              className="h-48 w-full flex-shrink-0 object-cover"
+            />
+          ))
+        ) : (
+          <img
+            src="/placeholder.jpg"
+            alt={listing.title}
+            className="h-48 w-full object-cover"
+          />
+        )}
+      </div>
 
       <div className="p-4">
         <h2 className="text-xl font-bold">{listing.title}</h2>
@@ -23,8 +36,7 @@ const ListingCard = ({ listing }: any) => {
         </p>
 
         <p className="text-xs text-gray-500 mt-2">
-          Posted by {listing.creator?.name} •{" "}
-          {moment(listing.createdAt).fromNow()}
+          Posted by {listing.creator?.name} • {moment(listing.createdAt).fromNow()}
         </p>
 
         <Link href={`/listing/${listing._id}`}>
