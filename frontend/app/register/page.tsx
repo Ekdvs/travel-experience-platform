@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import React, { useState } from "react";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 import toast from "react-hot-toast";
@@ -81,7 +81,13 @@ const Register = () => {
 
       {/* LEFT SIDE */}
       <div className="hidden lg:flex w-1/2 h-full flex-col items-center justify-center gap-8 bg-black/50 p-10">
-        <img src="/logo.png" alt="Travel Experience Logo" className="w-40 h-40 opacity-90" />
+       <Image
+                 src="/logo.png"
+                 alt="logo"
+                 width={100}
+                 height={100}
+                 className="object-contain opacity-90 drop-shadow-lg bg-black/50 p-2 rounded-full"
+               />
 
         <h1 className="text-5xl font-bold text-yellow-400">
           Travel Experience

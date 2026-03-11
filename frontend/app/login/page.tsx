@@ -61,9 +61,9 @@ const LoginPage = () => {
         <Image
           src="/logo.png"
           alt="logo"
-          width={180}
-          height={180}
-          className="object-contain opacity-90 drop-shadow-lg"
+          width={100}
+          height={100}
+          className="object-contain opacity-90 drop-shadow-lg bg-black/50 p-2 rounded-full"
         />
         <h1 className="text-5xl font-bold text-[#FFD700] text-center drop-shadow-lg">
           Your Gateway to Smarter Computing.
