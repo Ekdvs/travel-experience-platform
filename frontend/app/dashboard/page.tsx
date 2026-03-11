@@ -75,7 +75,7 @@ const UserDashboard = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static z-50 top-0 left-0 h-full w-64 bg-white shadow-md p-6 transform transition-transform duration-300
+        className={`fixed lg:static z-50 top-0 left-0 h-screen w-64 bg-yellow-200 shadow-md p-6 transform transition-transform duration-300
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
       >
