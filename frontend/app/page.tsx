@@ -4,26 +4,32 @@ import { useEffect, useState } from "react";
 import API from "@/utils/api";
 import ListingCard from "@/components/ListingCard";
 import Pagination from "@/components/Pagination";
+import Loader from "@/components/Loader";
 
 const HomePage = () => {
   const [listings, setListings] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   // Fetch all listings
   const fetchListings = async (pageNumber: number) => {
+    setLoading(true);
     try {
       const res = await API.get(`/listings/all?page=${pageNumber}&limit=12`);
       setListings(res.data.data.listings);
       setTotalPages(res.data.data.pagination.totalPages);
     } catch (error) {
       console.log("Error fetching listings:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Search listings
   const searchListings = async (pageNumber: number) => {
+    setLoading(true);
     try {
       if (!search.trim()) {
         // If search is empty, just fetch all listings
@@ -39,6 +45,8 @@ const HomePage = () => {
       setTotalPages(res.data.pagination.totalPages);
     } catch (error) {
       console.log("Error searching listings:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,6 +58,13 @@ const HomePage = () => {
       searchListings(page);
     }
   }, [page, search]);
+
+
+  if(loading) {
+    <Loader />
+  }
+
+
 
   return (
     <div className="max-w-6xl mx-auto p-6">

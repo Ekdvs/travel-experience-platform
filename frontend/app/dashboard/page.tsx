@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Plus, LogOut, FileText } from "lucide-react";
+import { Plus, LogOut, FileText, Menu, X } from "lucide-react";
 
 import API from "@/utils/api";
 import Loader from "@/components/Loader";
@@ -20,6 +20,7 @@ const UserDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const router = useRouter();
 
@@ -37,11 +38,8 @@ const UserDashboard = () => {
 
     const fetchUser = async () => {
       try {
-        const res = await API.get("/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await API.get("/users/me");
         if (res.data.success) setUser(res.data.data);
-        else toast.error("Failed to load user");
       } catch (err) {
         localStorage.removeItem("token");
         toast.error("Session expired. Please login again.");
@@ -56,7 +54,7 @@ const UserDashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await API.post("/users/logout", {}, { headers: { Authorization: `Bearer ${token}` } });
+      await API.post("/users/logout");
     } catch {}
     localStorage.removeItem("token");
     router.push("/login");
@@ -65,25 +63,52 @@ const UserDashboard = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="min-h-screen flex bg-gray-100" >
+    <div className="flex min-h-screen bg-gray-100">
 
-      {/* ✅ Sidebar — always visible, not hidden on mobile */}
-      <aside className="flex flex-col w-64 min-h-screen bg-yellow-100 shadow-md p-6 shrink-0">
-        <h1 className="text-2xl font-bold text-blue-600 mb-8">Dashboard</h1>
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed lg:static z-50 top-0 left-0 h-full w-64 bg-white shadow-md p-6 transform transition-transform duration-300
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        lg:translate-x-0`}
+      >
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-bold text-blue-600">Dashboard</h1>
+
+          {/* Close button mobile */}
+          <button
+            className="lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X size={24} />
+          </button>
+        </div>
 
         <ul className="space-y-2 flex-1">
           {sidebarItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.key;
+
             return (
               <li
                 key={item.key}
-                onClick={() => setActiveSection(item.key)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer text-lg transition-colors
-                  ${isActive
-                    ? "bg-blue-100 text-blue-600 font-bold"
-                    : "hover:bg-gray-200 text-black"
-                  }`}
+                onClick={() => {
+                  setActiveSection(item.key);
+                  setSidebarOpen(false);
+                }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer text-lg transition
+                ${
+                  isActive
+                    ? "bg-blue-100 text-blue-600 font-semibold"
+                    : "hover:bg-gray-200"
+                }`}
               >
                 <Icon size={20} />
                 {item.label}
@@ -92,21 +117,38 @@ const UserDashboard = () => {
           })}
         </ul>
 
-        {/* Logout pinned at bottom */}
-        <li
+        <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer text-red-500 hover:bg-red-50 list-none mt-4"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 mt-6 w-full"
         >
           <LogOut size={20} />
           Logout
-        </li>
+        </button>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 overflow-y-auto">
-        {activeSection === "dashboard" && <ListingsPage token={token} user={user} />}
-        {activeSection === "create" && <CreateListingPage token={token} user={user} />}
-      </main>
+      <div className="flex-1 flex flex-col">
+
+        {/* Topbar (mobile menu button) */}
+        <header className="flex items-center justify-between bg-white shadow px-6 py-4 lg:hidden">
+          <button onClick={() => setSidebarOpen(true)}>
+            <Menu size={26} />
+          </button>
+
+          <h2 className="font-semibold">User Dashboard</h2>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          {activeSection === "dashboard" && (
+            <ListingsPage token={token} user={user} />
+          )}
+
+          {activeSection === "create" && (
+            <CreateListingPage token={token} user={user} />
+          )}
+        </main>
+      </div>
     </div>
   );
 };
